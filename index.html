@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Pregnancy Plan</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="gate" id="gate">
+      <form class="gate-panel" id="gate-form">
+        <p class="eyebrow">Private planner</p>
+        <h1>Pregnancy Plan</h1>
+        <label for="passcode">Passcode</label>
+        <div class="gate-row">
+          <input id="passcode" name="passcode" type="password" autocomplete="current-password" />
+          <button type="submit">Unlock</button>
+        </div>
+        <p class="gate-error" id="gate-error" aria-live="polite"></p>
+        <p class="gate-note">Client-side passcode for casual privacy on a public static site.</p>
+      </form>
+    </div>
+
+    <div class="app" id="app" hidden>
+      <aside class="sidebar">
+        <div class="brand">
+          <p class="eyebrow">Ontario / Canada</p>
+          <h1>Pregnancy Plan</h1>
+          <p id="updated"></p>
+        </div>
+
+        <nav class="module-nav" id="module-nav" aria-label="Planner modules"></nav>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Anonymous planning workspace</p>
+            <h2 id="view-title">Timeline</h2>
+          </div>
+          <div class="actions">
+            <button id="print-button" type="button">Print</button>
+            <button id="lock-button" type="button">Lock</button>
+          </div>
+        </header>
+
+        <section class="controls" aria-label="Planner controls">
+          <div class="field search-field">
+            <label for="search">Search</label>
+            <input id="search" type="search" placeholder="screening, sleep, car seat..." />
+          </div>
+          <div class="field">
+            <label for="category-filter">Category</label>
+            <select id="category-filter"></select>
+          </div>
+          <div class="field">
+            <label for="kind-filter">Type</label>
+            <select id="kind-filter"></select>
+          </div>
+        </section>
+
+        <section class="view-tabs" aria-label="View selection">
+          <button class="tab is-active" data-view="timeline" type="button">Timeline</button>
+          <button class="tab" data-view="modules" type="button">Modules</button>
+          <button class="tab" data-view="reference" type="button">Reference</button>
+        </section>
+
+        <section class="status-strip" id="status-strip"></section>
+
+        <section class="content-view" id="timeline-view"></section>
+        <section class="content-view" id="modules-view" hidden></section>
+        <section class="content-view" id="reference-view" hidden></section>
+      </main>
+    </div>
+
+    <script src="planner-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
