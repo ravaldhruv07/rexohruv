@@ -24,13 +24,12 @@ To change the passcode, edit `passcodeNormalized` in `app.js`. Use the lowercase
 
 ## Publishing On GitHub Pages
 
-This repo is intentionally dependency-free. GitHub Pages can serve it directly from the repository root.
+This repo is intentionally dependency-free. `.github/workflows/pages.yml` deploys it on every push to `main` using the GitHub Actions Pages build (`actions/upload-pages-artifact` + `actions/deploy-pages`).
 
-Recommended Pages settings:
+Required repo settings, both one-time:
 
-- Source: `Deploy from a branch`
-- Branch: `main`
-- Folder: `/root`
+- Settings → Pages → Source: `GitHub Actions` (not "Deploy from a branch").
+- Settings → Environments → `github-pages` → Deployment branches: must include `main`, or the workflow fails with an environment-protection error.
 
 ## Content Model
 
