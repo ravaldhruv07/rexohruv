@@ -1,7 +1,6 @@
 const data = window.PLANNER_DATA;
 const unlockKey = "pregnancy-plan-unlocked";
-const plainPasscode = "family-plan";
-const passcodeAliases = new Set(["family-plan", "family plan", "familyplan"]);
+const passcodeNormalized = "familyplan";
 
 const state = {
   view: "timeline",
@@ -38,17 +37,12 @@ function slugLabel(value) {
     .join(" ");
 }
 
-async function sha256(message) {
-  if (!globalThis.crypto?.subtle) return "";
-  const encoded = new TextEncoder().encode(message);
-  const buffer = await crypto.subtle.digest("SHA-256", encoded);
-  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+function normalizePasscode(value) {
+  return text(value).trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-async function isPasscodeValid(value) {
-  const normalized = value.trim().toLowerCase();
-  if (passcodeAliases.has(normalized)) return true;
-  return (await sha256(normalized)) === data.passcodeHash;
+function isPasscodeValid(value) {
+  return normalizePasscode(value) === passcodeNormalized;
 }
 
 function shouldStartUnlocked() {
@@ -292,17 +286,13 @@ function render() {
   if (state.view === "reference") renderReference();
 }
 
-gateForm.addEventListener("submit", async (event) => {
+gateForm.addEventListener("submit", (event) => {
   event.preventDefault();
   gateError.textContent = "";
-  try {
-    if (await isPasscodeValid(passcodeInput.value)) {
-      unlock();
-    } else {
-      gateError.textContent = "Passcode did not match.";
-    }
-  } catch {
-    gateError.textContent = "Could not unlock in this browser. Use the HTTPS GitHub Pages URL.";
+  if (isPasscodeValid(passcodeInput.value)) {
+    unlock();
+  } else {
+    gateError.textContent = "Passcode did not match. Try family-plan.";
   }
 });
 
