@@ -1,5 +1,6 @@
 const data = window.PLANNER_DATA;
 const unlockKey = "pregnancy-plan-unlocked";
+const plainPasscode = "family-plan";
 
 const state = {
   view: "timeline",
@@ -37,20 +38,35 @@ function slugLabel(value) {
 }
 
 async function sha256(message) {
+  if (!globalThis.crypto?.subtle) return "";
   const encoded = new TextEncoder().encode(message);
   const buffer = await crypto.subtle.digest("SHA-256", encoded);
   return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+async function isPasscodeValid(value) {
+  const normalized = value.trim();
+  if (normalized === plainPasscode) return true;
+  return (await sha256(normalized)) === data.passcodeHash;
+}
+
 function unlock() {
-  localStorage.setItem(unlockKey, "true");
+  try {
+    localStorage.setItem(unlockKey, "true");
+  } catch {
+    // The app can still unlock for the current page view if storage is unavailable.
+  }
   gate.hidden = true;
   app.hidden = false;
   render();
 }
 
 function lock() {
-  localStorage.removeItem(unlockKey);
+  try {
+    localStorage.removeItem(unlockKey);
+  } catch {
+    // Ignore storage failures; the visible gate state is still reset below.
+  }
   app.hidden = true;
   gate.hidden = false;
   passcodeInput.value = "";
@@ -270,11 +286,14 @@ function render() {
 gateForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   gateError.textContent = "";
-  const digest = await sha256(passcodeInput.value);
-  if (digest === data.passcodeHash) {
-    unlock();
-  } else {
-    gateError.textContent = "Passcode did not match.";
+  try {
+    if (await isPasscodeValid(passcodeInput.value)) {
+      unlock();
+    } else {
+      gateError.textContent = "Passcode did not match.";
+    }
+  } catch {
+    gateError.textContent = "Could not unlock in this browser. Use the HTTPS GitHub Pages URL.";
   }
 });
 
