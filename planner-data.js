@@ -1,6 +1,42 @@
 window.PLANNER_DATA = {
   updatedAt: "2026-06-20",
-  passcodeHash: "558aae98e94e423b5811f035bd0ea27ec10383c62db1047c9efb49e93db3719f",
+
+  // Curated taxonomy. Categories follow the pregnancy journey and share their
+  // vocabulary with the planner modules. Each carries a human label and a calm
+  // accent colour used for the dot on category pills.
+  categories: {
+    screening: { label: "Screening", accent: "#2f8f83" },
+    genetics: { label: "Genetics", accent: "#5b6fae" },
+    labs: { label: "Bloodwork & Labs", accent: "#7d6bb0" },
+    ultrasound: { label: "Ultrasound", accent: "#4f93b8" },
+    monitoring: { label: "Monitoring", accent: "#6c7a86" },
+    daily: { label: "Daily Foundations", accent: "#4f9d69" },
+    movement: { label: "Movement & Body", accent: "#6f9b4a" },
+    meds: { label: "Meds & Exposures", accent: "#c98a2e" },
+    dental: { label: "Dental", accent: "#3f9aa0" },
+    birth: { label: "Birth Planning", accent: "#c2624f" },
+    gear: { label: "Gear & Safety", accent: "#c79a3a" },
+    feeding: { label: "Feeding", accent: "#c25e7a" },
+    newborn: { label: "Newborn Care", accent: "#8d6aa6" },
+    postpartum: { label: "Postpartum", accent: "#b5566b" }
+  },
+
+  // The nature of each action. Drives the "Type" filter and pill colour.
+  kinds: {
+    routine: { label: "Routine" },
+    decision: { label: "Decision" },
+    ongoing: { label: "Ongoing" },
+    conditional: { label: "Conditional" },
+    diagnostic: { label: "Diagnostic" },
+    urgent: { label: "Urgent" },
+    avoid: { label: "Avoid" }
+  },
+
+  statuses: {
+    confirmed: { label: "Confirmed" },
+    review: { label: "Provider review" }
+  },
+
   modules: [
     {
       id: "screening",
@@ -291,8 +327,8 @@ window.PLANNER_DATA = {
         },
         {
           title: "Discuss early diabetes screen, TSH, aspirin risk, and mental health baseline",
-          category: "medical",
-          kind: "follow-up",
+          category: "screening",
+          kind: "decision",
           status: "review",
           why: "PCOS and personal context can affect glucose screening, thyroid review, preeclampsia prevention, and support planning.",
           details: "Aspirin is provider-directed and typically starts after 12 weeks if she qualifies."
@@ -307,7 +343,7 @@ window.PLANNER_DATA = {
         },
         {
           title: "Set medication safety baseline",
-          category: "medication",
+          category: "meds",
           kind: "ongoing",
           status: "confirmed",
           why: "Avoids casual self-treatment and abrupt prescription stops.",
@@ -381,7 +417,7 @@ window.PLANNER_DATA = {
       items: [
         {
           title: "Start low-dose aspirin only if she qualifies",
-          category: "medical",
+          category: "monitoring",
           kind: "conditional",
           status: "confirmed",
           why: "Can reduce preeclampsia risk in eligible patients.",
@@ -389,8 +425,8 @@ window.PLANNER_DATA = {
         },
         {
           title: "Review all screening and carrier results",
-          category: "follow-up",
-          kind: "follow-up",
+          category: "genetics",
+          kind: "decision",
           status: "confirmed",
           why: "Abnormal NIPT, NT, carrier screen, or ultrasound findings need fast genetics/MFM follow-up.",
           details: "Do not treat NIPT positives as diagnostic without CVS or amnio confirmation."
@@ -457,7 +493,7 @@ window.PLANNER_DATA = {
         },
         {
           title: "RhIG pathway if mom is Rh-negative",
-          category: "blood-type-rh",
+          category: "labs",
           kind: "conditional",
           status: "confirmed",
           why: "Prevents sensitization against this or future pregnancies when baby is or may be Rh-positive.",
@@ -465,7 +501,7 @@ window.PLANNER_DATA = {
         },
         {
           title: "Set third-trimester sleep rule",
-          category: "sleep",
+          category: "daily",
           kind: "ongoing",
           status: "confirmed",
           why: "From 28 weeks, settle to sleep on either side for night sleep and naps.",
@@ -510,7 +546,7 @@ window.PLANNER_DATA = {
         {
           title: "Confirm labour triage rules and pain ladder",
           category: "birth",
-          kind: "follow-up",
+          kind: "decision",
           status: "confirmed",
           why: "Prevents uncertainty around 5-1-1, water breaking, GBS, fetal movement, monitoring, food/drink, and pain options.",
           details: "Ask about nitrous, epidural timing, opioid options, sterile water injections, shower/tub, and movement tools."
@@ -518,14 +554,14 @@ window.PLANNER_DATA = {
         {
           title: "Review induction, assisted delivery, and C-section contingency",
           category: "birth",
-          kind: "follow-up",
+          kind: "decision",
           status: "confirmed",
           why: "The useful birth plan includes decision thresholds, not just preferences.",
           details: "Ask exact indication, urgency, what happens if waiting, cervix/Bishop score, monitoring, pain options, and when C-section becomes safer."
         },
         {
           title: "Start perineal massage if cleared",
-          category: "birth-prep",
+          category: "movement",
           kind: "ongoing",
           status: "confirmed",
           why: "Late-pregnancy birth prep item, not a guarantee against tearing.",
@@ -533,7 +569,7 @@ window.PLANNER_DATA = {
         },
         {
           title: "Prepare labour breathing and position practice",
-          category: "birth-prep",
+          category: "movement",
           kind: "ongoing",
           status: "confirmed",
           why: "Builds tolerance for side-lying, hands-and-knees, supported squat, standing lean, sitting on ball, toilet sitting, and semi-reclined if needed.",
@@ -563,7 +599,7 @@ window.PLANNER_DATA = {
         },
         {
           title: "Pack hospital bags and install car seat",
-          category: "logistics",
+          category: "gear",
           kind: "routine",
           status: "confirmed",
           why: "Car seat is required for discharge if driving, and hospital bag should stay practical.",
@@ -585,7 +621,7 @@ window.PLANNER_DATA = {
       items: [
         {
           title: "Confirm baby position",
-          category: "medical",
+          category: "monitoring",
           kind: "routine",
           status: "confirmed",
           why: "Head-down vs breech changes birth planning.",
@@ -661,7 +697,7 @@ window.PLANNER_DATA = {
         },
         {
           title: "Escalate for dehydration, jaundice, poor feeding, fever, or weak/floppy baby",
-          category: "urgent",
+          category: "newborn",
           kind: "urgent",
           status: "confirmed",
           why: "These are same-day or urgent assessment triggers.",

@@ -1,6 +1,6 @@
 const data = window.PLANNER_DATA;
 const unlockKey = "pregnancy-plan-unlocked";
-const passcodeNormalized = "familyplan";
+const passcodeNormalized = "tdog";
 
 const state = {
   view: "timeline",
@@ -30,11 +30,30 @@ function text(value) {
   return String(value ?? "");
 }
 
-function slugLabel(value) {
+// Escape user-visible strings before they enter innerHTML so labels with
+// characters like "&" render correctly and nothing can break the markup.
+function esc(value) {
   return text(value)
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function categoryLabel(id) {
+  return data.categories[id]?.label ?? text(id);
+}
+
+function categoryAccent(id) {
+  return data.categories[id]?.accent ?? "#6c7a86";
+}
+
+function kindLabel(id) {
+  return data.kinds[id]?.label ?? text(id);
+}
+
+function statusLabel(id) {
+  return data.statuses[id]?.label ?? text(id);
 }
 
 function normalizePasscode(value) {
@@ -73,19 +92,22 @@ function lock() {
   app.hidden = true;
   gate.hidden = false;
   passcodeInput.value = "";
+  gateError.textContent = "";
   passcodeInput.focus();
 }
 
 function allItems() {
-  return data.timeline.flatMap((phase) => phase.items.map((item) => ({ ...item, phase: phase.phase, timing: phase.timing })));
+  return data.timeline.flatMap((phase) =>
+    phase.items.map((item) => ({ ...item, phase: phase.phase, timing: phase.timing }))
+  );
 }
 
 function matchesFilters(item) {
   const haystack = [
     item.title,
-    item.category,
-    item.kind,
-    item.status,
+    categoryLabel(item.category),
+    kindLabel(item.kind),
+    statusLabel(item.status),
     item.why,
     item.details,
     item.phase,
@@ -102,23 +124,34 @@ function matchesFilters(item) {
   return searchMatch && categoryMatch && kindMatch;
 }
 
-function unique(values) {
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
+function countBy(items, key) {
+  return items.reduce((acc, item) => {
+    acc[item[key]] = (acc[item[key]] || 0) + 1;
+    return acc;
+  }, {});
 }
 
 function populateFilters() {
   const items = allItems();
-  const categories = unique(items.map((item) => item.category));
-  const kinds = unique(items.map((item) => item.kind));
+  const categoryCounts = countBy(items, "category");
+  const kindCounts = countBy(items, "kind");
+
+  // Preserve the curated declaration order; only show facets that exist in data.
+  const categoryOptions = Object.keys(data.categories).filter((id) => categoryCounts[id]);
+  const kindOptions = Object.keys(data.kinds).filter((id) => kindCounts[id]);
 
   categoryFilter.innerHTML = [
     `<option value="all">All categories</option>`,
-    ...categories.map((category) => `<option value="${category}">${slugLabel(category)}</option>`)
+    ...categoryOptions.map(
+      (id) => `<option value="${esc(id)}">${esc(categoryLabel(id))} (${categoryCounts[id]})</option>`
+    )
   ].join("");
 
   kindFilter.innerHTML = [
     `<option value="all">All types</option>`,
-    ...kinds.map((kind) => `<option value="${kind}">${slugLabel(kind)}</option>`)
+    ...kindOptions.map(
+      (id) => `<option value="${esc(id)}">${esc(kindLabel(id))} (${kindCounts[id]})</option>`
+    )
   ].join("");
 }
 
@@ -126,9 +159,9 @@ function renderModuleNav() {
   moduleNav.innerHTML = data.modules
     .map(
       (module) => `
-        <button class="module-button ${module.id === state.activeModule ? "is-active" : ""}" data-module="${module.id}" type="button">
-          <strong>${module.title}</strong>
-          <span>${module.summary}</span>
+        <button class="module-button ${module.id === state.activeModule ? "is-active" : ""}" data-module="${esc(module.id)}" type="button">
+          <strong>${esc(module.title)}</strong>
+          <span>${esc(module.summary)}</span>
         </button>
       `
     )
@@ -141,31 +174,27 @@ function renderStats(filteredItems) {
   const conditionalCount = filteredItems.filter((item) => item.kind === "conditional").length;
 
   statusStrip.innerHTML = [
-    { label: "visible timeline items", value: filteredItems.length },
-    { label: "provider review flags", value: reviewCount },
-    { label: "conditional items", value: conditionalCount },
-    { label: "urgent rules", value: urgentCount }
+    { label: "Timeline items", value: filteredItems.length },
+    { label: "Provider review", value: reviewCount },
+    { label: "Conditional", value: conditionalCount },
+    { label: "Urgent flags", value: urgentCount }
   ]
-    .map((stat) => `<div class="stat"><strong>${stat.value}</strong><span>${stat.label}</span></div>`)
+    .map((stat) => `<div class="stat"><strong>${stat.value}</strong><span>${esc(stat.label)}</span></div>`)
     .join("");
-}
-
-function pill(label, className = "") {
-  return `<span class="pill ${className}">${label}</span>`;
 }
 
 function renderItem(item) {
   return `
     <article class="item-card">
       <div class="item-top">
-        <h4>${item.title}</h4>
-        ${pill(slugLabel(item.status), item.status)}
+        <h4>${esc(item.title)}</h4>
+        <span class="pill status-${esc(item.status)}">${esc(statusLabel(item.status))}</span>
       </div>
-      <p>${item.why}</p>
-      <p>${item.details}</p>
+      <p class="item-why">${esc(item.why)}</p>
+      <p class="item-details">${esc(item.details)}</p>
       <div class="meta-row">
-        ${pill(slugLabel(item.category))}
-        ${pill(slugLabel(item.kind), item.kind)}
+        <span class="pill pill-category"><span class="dot" style="background:${esc(categoryAccent(item.category))}"></span>${esc(categoryLabel(item.category))}</span>
+        <span class="pill kind-${esc(item.kind)}">${esc(kindLabel(item.kind))}</span>
       </div>
     </article>
   `;
@@ -191,8 +220,8 @@ function renderTimeline() {
           (phase) => `
             <section class="phase">
               <div class="phase-heading">
-                <h3>${phase.phase}</h3>
-                <p>${phase.timing}</p>
+                <h3>${esc(phase.phase)}</h3>
+                <p>${esc(phase.timing)}</p>
               </div>
               <div class="item-grid">
                 ${phase.items.map(renderItem).join("")}
@@ -211,18 +240,18 @@ function renderModules() {
 
   modulesView.innerHTML = `
     <div class="module-grid">
-      <article class="module-card">
+      <article class="module-card is-selected">
         <div>
           <p class="eyebrow">Selected module</p>
-          <h3>${selected.title}</h3>
-          <p>${selected.summary}</p>
+          <h3>${esc(selected.title)}</h3>
+          <p>${esc(selected.summary)}</p>
         </div>
         ${selected.sections
           .map(
             (section) => `
               <section class="module-section">
-                <h4>${section.title}</h4>
-                <ul>${section.items.map((item) => `<li>${item}</li>`).join("")}</ul>
+                <h4>${esc(section.title)}</h4>
+                <ul>${section.items.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
               </section>
             `
           )
@@ -234,10 +263,10 @@ function renderModules() {
           (module) => `
             <article class="module-card">
               <div>
-                <h3>${module.title}</h3>
-                <p>${module.summary}</p>
+                <h3>${esc(module.title)}</h3>
+                <p>${esc(module.summary)}</p>
               </div>
-              <button class="tab" data-open-module="${module.id}" type="button">Open</button>
+              <button class="open-button" data-open-module="${esc(module.id)}" type="button">Open module</button>
             </article>
           `
         )
@@ -254,8 +283,8 @@ function renderReference() {
         .map(
           (card) => `
             <article class="reference-card">
-              <h3>${card.title}</h3>
-              <ul>${card.items.map((item) => `<li>${item}</li>`).join("")}</ul>
+              <h3>${esc(card.title)}</h3>
+              <ul>${card.items.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
             </article>
           `
         )
@@ -273,7 +302,8 @@ function setView(nextView) {
   timelineView.hidden = state.view !== "timeline";
   modulesView.hidden = state.view !== "modules";
   referenceView.hidden = state.view !== "reference";
-  viewTitle.textContent = state.view === "timeline" ? "Timeline" : state.view === "modules" ? "Modules" : "Reference";
+  viewTitle.textContent =
+    state.view === "timeline" ? "Timeline" : state.view === "modules" ? "Modules" : "Reference";
   render();
 }
 
@@ -292,7 +322,8 @@ gateForm.addEventListener("submit", (event) => {
   if (isPasscodeValid(passcodeInput.value)) {
     unlock();
   } else {
-    gateError.textContent = "Passcode did not match. Try family-plan.";
+    gateError.textContent = "That passcode did not match. Please try again.";
+    passcodeInput.select();
   }
 });
 

@@ -14,15 +14,13 @@ Then visit `http://127.0.0.1:3010/`.
 
 ## Passcode
 
-Default client-side passcode: `family-plan`
+Client-side passcode: `tdog`
 
-This is only casual privacy. GitHub Pages is public static hosting, so the planner content and passcode hash are still present in the published source.
+Entry is normalized (case- and punctuation-insensitive), so `tdog`, `TDog`, and ` tdog ` all unlock it.
 
-To change the passcode, generate a new SHA-256 hash and replace `passcodeHash` in `planner-data.js`:
+This is only casual privacy. GitHub Pages is public static hosting, so the planner content is still present in the published source.
 
-```sh
-python3 -c "import hashlib; print(hashlib.sha256(b'new-passcode').hexdigest())"
-```
+To change the passcode, edit `passcodeNormalized` in `app.js`. Use the lowercased, alphanumeric-only form of your phrase — for example the passcode `our-baby` is stored as `ourbaby`.
 
 ## Publishing On GitHub Pages
 
@@ -36,6 +34,10 @@ Recommended Pages settings:
 
 ## Content Model
 
-- `planner-data.js` contains normalized planner modules, timeline items, and reference cards.
-- `app.js` handles passcode unlock, filtering, module navigation, and rendering.
-- `styles.css` handles responsive layout and print styling.
+- `planner-data.js` holds the structured content: `categories`, `kinds`, and `statuses` lookup maps (each with a human label, and an accent colour for categories), the `modules`, a phased `timeline`, and `reference` cards. Every timeline item references a category/kind/status by key, so labels and colours stay consistent.
+- `app.js` handles passcode unlock, search/category/type filtering, module navigation, and rendering.
+- `styles.css` handles the responsive layout, theme, and print styling.
+
+## Typography
+
+Headings use Fraunces and UI text uses Inter, loaded from Google Fonts with system serif/sans fallbacks so the planner still reads well offline.
