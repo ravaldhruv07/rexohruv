@@ -1,6 +1,7 @@
 const data = window.PLANNER_DATA;
 const unlockKey = "pregnancy-plan-unlocked";
 const plainPasscode = "family-plan";
+const passcodeAliases = new Set(["family-plan", "family plan", "familyplan"]);
 
 const state = {
   view: "timeline",
@@ -45,9 +46,17 @@ async function sha256(message) {
 }
 
 async function isPasscodeValid(value) {
-  const normalized = value.trim();
-  if (normalized === plainPasscode) return true;
+  const normalized = value.trim().toLowerCase();
+  if (passcodeAliases.has(normalized)) return true;
   return (await sha256(normalized)) === data.passcodeHash;
+}
+
+function shouldStartUnlocked() {
+  try {
+    return localStorage.getItem(unlockKey) === "true";
+  } catch {
+    return false;
+  }
 }
 
 function unlock() {
@@ -329,7 +338,7 @@ document.addEventListener("click", (event) => {
 
 populateFilters();
 
-if (localStorage.getItem(unlockKey) === "true") {
+if (shouldStartUnlocked()) {
   unlock();
 } else {
   passcodeInput.focus();
